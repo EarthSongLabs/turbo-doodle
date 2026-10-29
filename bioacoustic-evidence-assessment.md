@@ -2,105 +2,93 @@
 
 ## Purpose
 
-Evaluate the scientific conclusions supported by bioacoustic recordings and associated metadata, distinguishing directly observable acoustic features from biological and ecological interpretations.
+Evaluate scientific claims derived from bioacoustic recordings and associated metadata, distinguishing directly observable acoustic characteristics from biological and ecological interpretations.
 
-This workflow provides a reusable framework for assessing evidence quality, identifying uncertainty, evaluating alternative explanations, and determining what additional information is needed to support scientific claims.
+This framework supports evidence evaluation, uncertainty assessment, alternative explanations, and identification of additional research needs.
 
-## Tools
+## Method
 
-- **Firefox or another browser:** Source documentation, archive records, and scientific references
-- **Terminal / FFprobe:** Audio file properties and technical verification
-- **Audacity or equivalent software:** Waveform, spectrogram, and acoustic signal examination
-- **Microsoft Excel:** Structured evidence assessment and metadata tracking
+### 1. Establish evidence provenance
 
-## Workflow
+Identify the original recording or dataset, collection methods, technical specifications, licensing, and available metadata.
 
-### 1. Establish recording provenance
+Distinguish verified source information from assumptions, incomplete documentation, and missing evidence.
 
-Identify the recording or dataset, its original source, collection methods, licensing, and available metadata.
+### 2. Characterize acoustic observations
 
-Record relevant information in the **Source & Metadata** worksheet of the accompanying Excel template.
+Examine relevant acoustic properties, including:
 
-Distinguish verified documentation from assumptions and missing information.
+- Frequency range and spectral structure
+- Temporal patterns, duration, and repetition
+- Amplitude characteristics
+- Signal-to-noise ratio and interference
+- Recording and processing limitations
 
-### 2. Inspect technical characteristics
+Document directly observed or measured characteristics separately from interpretations.
 
-Use FFprobe or equivalent tools to examine audio format, sample rate, channel configuration, duration, and available bit-depth information.
+### 3. Classify the level of scientific inference
 
-Example:
+| Inference level | Assessment question |
+|---|---|
+| Acoustic observation | What measurable signal characteristics are present? |
+| Source identification | What evidence supports attribution to a particular biological or environmental source? |
+| Behavioral or ecological interpretation | What evidence supports conclusions about behavior, communication, or ecological function? |
+| Population-level inference | Does the sampling design support conclusions about distribution, abundance, occupancy, or trends? |
 
-```bash
-ffprobe -v error \
-  -show_entries format=filename,format_name,duration,size \
-  -show_entries stream=codec_name,sample_rate,channels,bits_per_raw_sample \
-  -of json recording.wav
-```
+Higher-level claims may require evidence beyond the recording itself, including independent validation, behavioral observations, environmental context, or representative sampling.
 
-Replace `recording.wav` with the actual file path.
+### 4. Assess claim support
 
-Compare file properties with source documentation. Do not treat file specifications as evidence of instrument calibration or recording quality.
+For each claim, document:
 
-### 3. Characterize acoustic evidence
+- Claim and inference level
+- Supporting and conflicting evidence
+- Evidence provenance
+- Alternative explanations
+- Methodological limitations
+- Uncertainty and identification confidence
+- Additional evidence required
 
-When appropriate, examine waveforms and spectrograms in Audacity or other analytical software.
+Use consistent support classifications:
 
-Document observable characteristics such as frequency range, timing, signal repetition, amplitude patterns, and potential interference.
+- **Supported**
+- **Partially supported**
+- **Unsupported**
+- **Not assessed**
 
-Separate acoustic observations from interpretations about species identity, behavior, or ecological significance.
-
-### 4. Evaluate scientific claims
-
-Assess proposed claims at the appropriate level of inference:
-
-- **Acoustic observation:** What measurable signal characteristics are present?
-- **Source identification:** What evidence supports attribution to a species or other acoustic source?
-- **Behavioral or ecological interpretation:** What context supports conclusions about behavior, communication, or ecological function?
-- **Population-level inference:** Does the sampling design support conclusions about abundance, distribution, occupancy, or trends?
-
-Use the **Claim Assessment** worksheet to document supporting evidence, inference level, support status, uncertainty, alternative explanations, and additional evidence requirements.
-
-Suggested support categories:
-
-- Supported
-- Partially supported
-- Unsupported
-- Not assessed
+These categories describe the support provided by the available evidence, not absolute scientific certainty.
 
 ### 5. Identify evidence gaps
 
-Review the assessments for missing metadata, methodological limitations, and unresolved scientific questions.
+Prioritize missing metadata, independent observations, additional recordings, analytical tests, or literature needed to resolve important uncertainties.
 
-Use the **Evidence Requests** worksheet to prioritize additional documentation, observations, recordings, or analyses that could meaningfully improve confidence in the conclusions.
+### 6. Verify and revise
 
-### 6. Verify and refine conclusions
+Check conclusions against primary documentation, acoustic measurements, and relevant scientific literature.
 
-Recheck claims against primary documentation, measured acoustic characteristics, and relevant scientific literature.
+Preserve traceable references and update assessments as evidence changes.
 
-Update assessments as new evidence becomes available. Preserve traceable references and clearly distinguish established findings from provisional interpretations.
+## Assessment Template
 
-## Excel Assessment Template
+[Bioacoustic Evidence Assessment Workbook](https://github.com/EarthSongLabs/turbo-doodle/blob/main/earth_song_labs_bioacoustic_evidence_template.xlsx)
 
-**[Download the Bioacoustic Evidence Assessment Template](earth_song_labs_bioacoustic_evidence_template.xlsx)**
+The reusable Excel workbook contains:
 
-The accompanying Excel workbook provides four worksheets:
+1. **Claim Assessment** — Claims, inference levels, supporting evidence, alternatives, uncertainty, and support status.
+2. **Source & Metadata** — Provenance, technical characteristics, permissions, and metadata completeness.
+3. **Evidence Requests** — Missing information and prioritized follow-up.
+4. **Guide** — Assessment definitions and instructions.
 
-1. **Claim Assessment** — Evaluate proposed scientific claims, evidence, inference levels, uncertainty, and support status.
-2. **Source & Metadata** — Document recording provenance, technical characteristics, licensing, and metadata completeness.
-3. **Evidence Requests** — Track missing information and prioritize follow-up investigations.
-4. **Guide** — Reference instructions and assessment definitions.
+## Quality Control
 
-The template can be reused across individual recordings, comparative acoustic studies, and broader ecological research projects.
+- Separate direct observations from interpretation.
+- Do not equate recording specifications with verified acoustic quality.
+- Do not infer species identity or behavior from detection alone.
+- Evaluate population-level claims against sampling effort, detection probability, and representativeness.
+- Consider plausible alternative explanations.
+- Document uncertainty and unsupported assumptions.
+- Preserve traceable evidence and revise conclusions when warranted.
 
-## Quality-Control Principles
+## Output
 
-- Separate direct measurements from scientific interpretation.
-- Distinguish documented specifications from independently assessed acoustic quality.
-- Do not assume that a detected signal establishes species identity or behavior.
-- Evaluate population-level conclusions against sampling effort, detection probability, and spatial and temporal representativeness.
-- Maintain traceable source references.
-- Explicitly document uncertainty and alternative explanations.
-- Revisit conclusions when additional evidence becomes available.
-
-## Outputs
-
-A structured, revisable scientific evidence assessment containing documented source metadata, evaluated claims, supporting evidence, uncertainties, and prioritized next steps.
+A structured, revisable scientific evidence assessment with documented claims, source metadata, supporting evidence, uncertainty, and prioritized research needs.

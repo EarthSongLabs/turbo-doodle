@@ -2,77 +2,60 @@
 
 ## Purpose
 
-Investigate unexpected or potentially problematic acoustic features in recordings, distinguish plausible signal sources from recording or processing artifacts, and determine whether affected audio should be retained, reprocessed, or excluded from further analysis.
+Investigate unexpected acoustic features, distinguish plausible sound sources from recording or processing artifacts, and determine whether affected audio is suitable for further analysis.
 
-This workflow supports bioacoustic research, field recording, soundscape analysis, and experimental audio production.
+Applicable to bioacoustic research, field recordings, soundscape analysis, and experimental audio production.
 
-## Tools
-
-- **Audacity:** Waveform and spectrogram inspection, comparative listening, and evidence capture
-- **FFprobe / FFmpeg:** Optional technical verification and controlled audio comparisons
-- **PDF export tool:** Word, Pages, or another application capable of producing a report with embedded figures
-
-## Workflow
+## Method
 
 ### 1. Establish recording context
 
-Identify the source recording and relevant acquisition information:
+Document the source recording, acquisition conditions, technical specifications, processing history, and available environmental metadata.
 
-- Recording date, location, and source
-- Sample rate, channel configuration, and encoding
-- Recording equipment and available calibration information
-- Known processing history
-- Relevant environmental or acoustic context
+Identify missing or uncertain information that could affect interpretation.
 
-Document missing information rather than assuming it.
+### 2. Characterize the anomaly
 
-### 2. Identify and isolate the anomaly
+Locate the feature and record its precise timestamps.
 
-Open the recording in Audacity.
+Examine:
 
-Locate the unusual feature and record its precise start and end timestamps.
+- Frequency distribution, bandwidth, and spectral structure
+- Duration, timing, and periodicity
+- Amplitude and dynamic characteristics
+- Background noise and neighboring events
+- Harmonic patterns, discontinuities, and clipping
+- Differences between channels or recording versions
 
-Inspect the waveform and spectrogram, noting:
-
-- Frequency distribution and bandwidth
-- Duration and temporal structure
-- Amplitude characteristics
-- Harmonic or periodic patterns
-- Background noise
-- Abrupt discontinuities or clipping
-- Relationship to surrounding acoustic events
-
-Preserve the original recording. Use copies for any destructive processing.
+Preserve the original recording and distinguish direct observations from interpretation.
 
 ### 3. Develop competing explanations
 
-Consider plausible interpretations of the observed feature, including:
+Evaluate plausible hypotheses, including:
 
-- Biological or environmental acoustic event
+- Biological or environmental sound
 - Mechanical or electronic interference
-- Instrument or recording-system artifact
-- Clipping, distortion, or overload
+- Recording-system artifact
+- Clipping, overload, or distortion
 - Processing or encoding artifact
-- Unidentified source
+- Unidentified acoustic source
 
-Evaluate each explanation against the observed evidence.
+Assess each explanation against the available evidence without assuming biological origin.
 
-Avoid assigning a biological source without sufficient supporting evidence.
+### 4. Conduct targeted diagnostic tests
 
-### 4. Conduct targeted diagnostic comparisons
+Select comparisons that can distinguish between competing hypotheses.
 
-Select tests appropriate to the anomaly.
+Possible tests include:
 
-Possible approaches include:
+- Adjacent or unaffected audio comparison
+- Alternative spectrogram settings
+- Channel-specific analysis
+- Original versus processed recording comparison
+- Clipping and discontinuity inspection
+- Review of acquisition and environmental metadata
 
-- Compare the anomaly with adjacent unaffected audio.
-- Inspect different spectrogram frequency ranges and resolutions.
-- Examine individual channels for channel-specific artifacts.
-- Compare original and processed versions when available.
-- Check for clipping, discontinuities, or unusual spectral concentrations.
-- Review available recording-system and environmental metadata.
-
-Where useful, inspect technical properties using FFprobe:
+For technical verification, FFprobe may be used:
 
 ```bash
 ffprobe -v error \
@@ -81,73 +64,62 @@ ffprobe -v error \
   -of json recording.wav
 ```
 
-Record test settings and observations so that diagnostic comparisons can be repeated.
+Record diagnostic settings, observations, and relevant limitations.
 
-### 5. Evaluate analytical suitability
+### 5. Assess analytical suitability
 
 Determine whether the anomaly affects the intended analysis.
 
 Consider:
 
-- Whether the affected frequency or time interval overlaps the signal of interest
-- Whether measurements could be biased by the anomaly
-- Whether the anomaly can be isolated without compromising relevant information
-- Whether corrective processing would introduce additional uncertainty
-- Whether unaffected portions remain suitable for analysis
+- Overlap with relevant acoustic signals
+- Potential bias in measured properties
+- Whether affected intervals can be isolated
+- Risks introduced by corrective processing
+- Suitability of unaffected recording segments
 
-Distinguish acoustic suitability for scientific measurement from suitability for creative use.
+Distinguish scientific measurement suitability from creative audio suitability.
 
-### 6. Make a justified recommendation
+### 6. Determine disposition
 
-Choose one primary disposition:
+Select a justified recommendation for the affected interval and intended application.
 
-**Keep:** The recording or affected segment remains suitable for the intended analysis, with documented limitations.
+**Keep:** Retain the audio because the anomaly does not invalidate the intended analysis, subject to documented limitations.
 
-**Reprocess:** A specific, justified processing operation may address the problem without unacceptable loss or alteration of relevant information.
+**Reprocess:** Apply a specified corrective operation when its expected benefits and potential distortions can be evaluated.
 
-**Exclude:** The affected segment cannot reliably support the intended analysis, or its uncertainty is unacceptable.
+**Exclude:** Remove the affected interval from the intended analysis when its reliability is insufficient.
 
-Document the evidence supporting the decision, alternative explanations, and remaining uncertainties.
+A disposition may apply to a particular measurement, frequency range, or time interval rather than the entire recording.
 
-A recommendation may apply only to a specific analytical purpose or time interval rather than the entire recording.
+### 7. Document and verify
 
-## Diagnostic Report
+Maintain a diagnostic record containing:
 
-Prepare a concise PDF report containing:
+- Recording provenance and technical context
+- Anomaly timestamps
+- Waveform and spectrogram evidence
+- Diagnostic settings and comparisons
+- Competing hypotheses
+- Supporting and conflicting observations
+- Analytical implications
+- Recommendation and justification
+- Remaining uncertainty and follow-up needs
 
-### Recording identification
-Source, relevant metadata, file specifications, and processing history.
+Preserve traceability between evidence and conclusions.
 
-### Anomaly description
-Start/end timestamps and directly observed acoustic characteristics.
+## Quality Control
 
-### Visual evidence
-Timestamped waveform and spectrogram screenshots, including relevant frequency scales, display settings, and contextual audio where useful.
+- Preserve original audio.
+- Record precise anomaly boundaries.
+- Include timestamped acoustic evidence.
+- Document relevant analysis settings.
+- Consider plausible alternative explanations.
+- Separate observations from causal interpretations.
+- Evaluate suitability for a defined analytical purpose.
+- Justify corrective processing before applying it.
+- Identify unresolved uncertainty.
 
-### Diagnostic interpretation
-Competing explanations, supporting and conflicting observations, and unresolved uncertainty.
+## Output
 
-### Analytical implications
-Potential effects on measurements, biological interpretation, or downstream processing.
-
-### Recommendation
-Keep, reprocess, or exclude, with a concise scientific justification and any required follow-up actions.
-
-## Verification Checklist
-
-- [ ] Original audio preserved
-- [ ] Anomaly timestamps recorded
-- [ ] Waveform and spectrogram evidence captured
-- [ ] Relevant display and analysis settings documented
-- [ ] At least two plausible explanations considered when supported by the evidence
-- [ ] Observations distinguished from interpretations
-- [ ] Impact on intended analysis evaluated
-- [ ] Limitations and uncertainty identified
-- [ ] Recommendation justified by diagnostic evidence
-- [ ] PDF report reviewed for traceability and clarity
-
-## Outputs
-
-A documented audio diagnostic assessment containing timestamped acoustic evidence, competing explanations, analytical limitations, and a justified keep/reprocess/exclude recommendation.
-
-The framework can be repeated across recordings and adapted to different research or creative objectives.
+A reproducible diagnostic assessment documenting acoustic evidence, competing explanations, analytical limitations, and a justified Keep / Reprocess / Exclude recommendation.

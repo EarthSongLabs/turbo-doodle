@@ -2,45 +2,105 @@
 
 ## Purpose
 
-Evaluate the scientific conclusions supported by bioacoustic recordings and associated metadata, distinguishing directly observable acoustic features from increasingly complex biological and ecological interpretations.
+Evaluate the scientific conclusions supported by bioacoustic recordings and associated metadata, distinguishing directly observable acoustic features from biological and ecological interpretations.
 
-This workflow provides a reusable framework for assessing evidence quality, identifying uncertainty, evaluating alternative explanations, and determining what additional information is required to support specific scientific claims.
+This workflow provides a reusable framework for assessing evidence quality, identifying uncertainty, evaluating alternative explanations, and determining what additional information is needed to support scientific claims.
 
-## General workflow
+## Tools
 
-1. **Establish provenance:** Identify the recording or dataset, original source, collection methods, licensing, and available metadata.
+- **Firefox or another browser:** Source documentation, archive records, and scientific references
+- **Terminal / FFprobe:** Audio file properties and technical verification
+- **Audacity or equivalent software:** Waveform, spectrogram, and acoustic signal examination
+- **Microsoft Excel:** Structured evidence assessment and metadata tracking
 
-2. **Inspect technical characteristics:** Use FFprobe or equivalent tools to examine audio format, sampling parameters, channel configuration, duration, and other relevant properties. Distinguish file properties from instrument calibration and deployment information.
+## Workflow
 
-3. **Characterize acoustic evidence:** When appropriate, use Audacity or analytical software to document observable frequency, timing, amplitude, and signal-pattern characteristics without prematurely assigning biological meaning.
+### 1. Establish recording provenance
 
-4. **Evaluate levels of inference:**
-   - **Acoustic observation:** What measurable sound characteristics are present?
-   - **Source identification:** What evidence supports attribution to a species or other source?
-   - **Behavioral or ecological interpretation:** What additional context supports conclusions about behavior, communication, or ecological function?
-   - **Population-level inference:** Does the sampling design support conclusions about abundance, distribution, occupancy, or trends?
+Identify the recording or dataset, its original source, collection methods, licensing, and available metadata.
 
-5. **Construct an evidence matrix:** For each proposed claim, record its evidence, support level, alternative explanations, limitations, missing metadata, and supporting references.
+Record relevant information in the **Source & Metadata** worksheet of the accompanying Excel template.
 
-6. **Identify next analytical steps:** Determine which additional metadata, observations, recordings, or analyses would most meaningfully reduce uncertainty.
+Distinguish verified documentation from assumptions and missing information.
 
-## Evidence matrix template
+### 2. Inspect technical characteristics
 
-| Proposed claim | Supporting evidence | Support level | Uncertainty / alternatives | Additional evidence needed |
-|---|---|---|---|---|
-| | | | | |
+Use FFprobe or equivalent tools to examine audio format, sample rate, channel configuration, duration, and available bit-depth information.
 
-Suggested support levels: **Supported, Partially supported, Unsupported, or Not assessed.**
+Example:
 
-## Quality-control principles
+```bash
+ffprobe -v error \
+  -show_entries format=filename,format_name,duration,size \
+  -show_entries stream=codec_name,sample_rate,channels,bits_per_raw_sample \
+  -of json recording.wav
+```
 
-- Separate direct measurements from interpretation.
-- Distinguish documented specifications from independently assessed recording quality.
-- Do not assume that a detected sound establishes species identity or behavior.
-- Evaluate population-level claims against sampling effort, detection probability, spatial coverage, and temporal representativeness.
-- Preserve source references and document unresolved uncertainties.
-- Treat conclusions as revisable when new evidence becomes available.
+Replace `recording.wav` with the actual file path.
 
-## Applications
+Compare file properties with source documentation. Do not treat file specifications as evidence of instrument calibration or recording quality.
 
-Firefox or another browser for source documentation; Terminal and FFprobe for technical inspection; Audacity or other acoustic-analysis software for signal examination; Markdown or a spreadsheet for evidence tracking.
+### 3. Characterize acoustic evidence
+
+When appropriate, examine waveforms and spectrograms in Audacity or other analytical software.
+
+Document observable characteristics such as frequency range, timing, signal repetition, amplitude patterns, and potential interference.
+
+Separate acoustic observations from interpretations about species identity, behavior, or ecological significance.
+
+### 4. Evaluate scientific claims
+
+Assess proposed claims at the appropriate level of inference:
+
+- **Acoustic observation:** What measurable signal characteristics are present?
+- **Source identification:** What evidence supports attribution to a species or other acoustic source?
+- **Behavioral or ecological interpretation:** What context supports conclusions about behavior, communication, or ecological function?
+- **Population-level inference:** Does the sampling design support conclusions about abundance, distribution, occupancy, or trends?
+
+Use the **Claim Assessment** worksheet to document supporting evidence, inference level, support status, uncertainty, alternative explanations, and additional evidence requirements.
+
+Suggested support categories:
+
+- Supported
+- Partially supported
+- Unsupported
+- Not assessed
+
+### 5. Identify evidence gaps
+
+Review the assessments for missing metadata, methodological limitations, and unresolved scientific questions.
+
+Use the **Evidence Requests** worksheet to prioritize additional documentation, observations, recordings, or analyses that could meaningfully improve confidence in the conclusions.
+
+### 6. Verify and refine conclusions
+
+Recheck claims against primary documentation, measured acoustic characteristics, and relevant scientific literature.
+
+Update assessments as new evidence becomes available. Preserve traceable references and clearly distinguish established findings from provisional interpretations.
+
+## Excel Assessment Template
+
+**[Download the Bioacoustic Evidence Assessment Template](earth_song_labs_bioacoustic_evidence_template.xlsx)**
+
+The accompanying Excel workbook provides four worksheets:
+
+1. **Claim Assessment** — Evaluate proposed scientific claims, evidence, inference levels, uncertainty, and support status.
+2. **Source & Metadata** — Document recording provenance, technical characteristics, licensing, and metadata completeness.
+3. **Evidence Requests** — Track missing information and prioritize follow-up investigations.
+4. **Guide** — Reference instructions and assessment definitions.
+
+The template can be reused across individual recordings, comparative acoustic studies, and broader ecological research projects.
+
+## Quality-Control Principles
+
+- Separate direct measurements from scientific interpretation.
+- Distinguish documented specifications from independently assessed acoustic quality.
+- Do not assume that a detected signal establishes species identity or behavior.
+- Evaluate population-level conclusions against sampling effort, detection probability, and spatial and temporal representativeness.
+- Maintain traceable source references.
+- Explicitly document uncertainty and alternative explanations.
+- Revisit conclusions when additional evidence becomes available.
+
+## Outputs
+
+A structured, revisable scientific evidence assessment containing documented source metadata, evaluated claims, supporting evidence, uncertainties, and prioritized next steps.

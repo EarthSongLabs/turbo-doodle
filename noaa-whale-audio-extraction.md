@@ -1,157 +1,109 @@
 # NOAA Passive Acoustic Recording Selection and Extraction
 
-**Purpose:** Identify a suitable marine mammal vocalization in a publicly accessible NOAA passive acoustic recording, extract an uncompressed audio excerpt, and document the selection process for reproducibility.
+## Purpose
 
-**Output:** One uncompressed WAV excerpt, accompanied by source metadata and selection notes.
+Access, select, extract, and verify passive acoustic recordings from NOAA archives for marine bioacoustic research and creative sound investigation.
 
-This workflow is reusable across recordings. Dataset locations, filenames, timestamps, and output encoding must be determined for each extraction.
+This workflow documents NOAA-specific data access, metadata verification, and extraction procedures. Individual recordings, timestamps, and analytical objectives are selected for each use.
 
-## 1. Firefox — Identify the source dataset and verify licensing
+## Reference Sources
 
-Consult:
+- [NOAA Passive Acoustic Data Archive](https://www.ncei.noaa.gov/products/passive-acoustic-data)
+- [NOAA SanctSound Metadata](https://www.fisheries.noaa.gov/inport/item/80343/full-list)
 
-- [NOAA SanctSound metadata](https://www.fisheries.noaa.gov/inport/item/80343/full-list)
-- [NOAA passive acoustic data archive](https://www.ncei.noaa.gov/products/passive-acoustic-data)
+Different NOAA collections may use different storage systems, download interfaces, and metadata structures. Verify the access method for the selected collection rather than assuming a universal NOAA download command.
 
-Identify an appropriate recording collection based on geographic location, recording period, documented biological activity, and available acoustic metadata.
+## 1. Identify the Dataset
 
-For each candidate dataset:
+Review the relevant NOAA archive or collection documentation.
 
-1. Identify the original data provider and archive.
-2. Verify the license or public-domain status of the **specific dataset and recording**. If CC0 1.0 is required, confirm that designation explicitly.
-3. Identify the download method and actual file location.
-4. Review the hydrophone location, sampling rate, number of channels, recording duration, and available instrument specifications.
-5. Look for deployment notes, acoustic annotations, or other information indicating likely marine mammal activity.
+Establish:
 
-Do not assume that all NOAA-hosted recordings share the same license.
+- Dataset and collection identifier
+- Original data provider
+- Recording location and deployment period
+- Hydrophone and acquisition specifications
+- Available annotations and biological context
+- Data access method
+- Applicable licensing and reuse restrictions
 
-**Record:** Dataset title, source URL, license evidence, location, recording date, and selected filename.
+Verify permissions at the dataset or recording level. NOAA hosting does not automatically establish CC0 status or unrestricted reuse.
 
-## 2. Firefox — Find a promising recording
+## 2. Locate and Retrieve Recordings
 
-Before downloading large files, investigate where useful vocalizations are most likely to occur.
+Use the access procedure documented for the selected NOAA collection.
 
-Search available recording catalogs, deployment descriptions, annotations, or acoustic summaries for relevant species and periods of activity.
+### Google Cloud Storage
 
-Consider:
-
-- Documented or expected marine mammal presence
-- Seasonal migration or vocal activity
-- Hydrophone frequency response and sampling rate
-- Available recording dates and durations
-- Existing acoustic detections or annotations
-- File size and practical download requirements
-
-Select one promising recording to inspect.
-
-If the archive provides preview audio, spectrograms, or annotated intervals, use those to narrow the search.
-
-**Record:** Why this recording was selected and any known candidate intervals.
-
-Do not describe an interval as a confirmed whale vocalization unless the available evidence supports that identification.
-
-## 3. Terminal.app — Prepare the workspace and download
-
-Create the working directories:
+Where a collection provides verified Google Cloud Storage paths:
 
 ```bash
-mkdir -p ~/whale_acoustics/{raw,excerpts,metadata}
-cd ~/whale_acoustics
-```
-
-Check installed tools:
-
-```bash
-gcloud --version
-ffmpeg -version
-ffprobe -version
-```
-
-Install missing tools as needed. Google Cloud CLI is only necessary if the selected archive uses a compatible Google Cloud Storage access method.
-
-### Download the selected recording
-
-Use the archive's verified download method.
-
-**If the recording is available through Google Cloud Storage:**
-
-```bash
-# List objects at the verified dataset location
 gcloud storage ls "gs://VERIFIED_BUCKET/VERIFIED_PREFIX/"
+```
 
-# Download the selected recording
+Download a selected file:
+
+```bash
 gcloud storage cp \
   "gs://VERIFIED_BUCKET/VERIFIED_PREFIX/recording.wav" \
   raw/recording.wav
 ```
 
-These are placeholders. Replace the bucket, object path, and filename with verified values.
+The bucket and object paths above are placeholders, not confirmed NOAA storage locations.
 
-If the archive instead supplies HTTPS downloads or another access method, follow its documented instructions.
+### HTTPS or Other Archive Access
 
-Preserve the original recording format and filename whenever practical.
+Where NOAA provides direct HTTPS downloads, archive interfaces, or another retrieval mechanism, use the documented method and preserve the original filename and format when practical.
 
-### Inspect the downloaded audio
+Record the actual retrieval command or procedure for future reuse.
 
-For a WAV recording:
+## 3. Verify the Download
+
+Preserve the original recording.
+
+Generate a file checksum:
+
+```bash
+shasum -a 256 raw/recording.wav
+```
+
+Inspect technical properties:
 
 ```bash
 ffprobe -v error \
-  -show_entries format=duration:stream=codec_name,sample_rate,channels,bits_per_raw_sample,bits_per_sample \
-  -of default=noprint_wrappers=1 \
-  raw/recording.wav
+  -show_entries format=duration,format_name,size \
+  -show_entries stream=codec_name,sample_rate,channels,bits_per_sample,bits_per_raw_sample \
+  -of json raw/recording.wav
 ```
 
-Replace the filename if the downloaded recording is FLAC or another supported format.
+Compare the results with the collection metadata.
 
-Record the original encoding, sample rate, channel count, and duration.
+Where NOAA provides an authoritative checksum, compare it with the downloaded file.
 
-## 4. Audacity — Inspect the recording and select an interval
+Document any discrepancies between the file properties and archive documentation.
 
-Open the downloaded recording in Audacity.
+## 4. Identify Acoustic Intervals
 
-Switch to **Spectrogram** view and configure the display for the frequency range of interest.
-
-Examine the recording for candidate marine mammal vocalizations.
+Use recording annotations, waveform inspection, spectrogram analysis, and listening to locate relevant acoustic events.
 
 Evaluate:
 
-- Distinct, biologically plausible acoustic features
-- Discernible temporal and spectral structure
-- Adequate signal-to-noise ratio
-- Minimal interference from vessels, other calls, or environmental noise
-- A complete call or meaningful call sequence
-- Absence of clipping or major recording artifacts
+- Signal frequency range and temporal structure
+- Signal-to-noise ratio
+- Interference and recording artifacts
+- Completeness of calls or acoustic sequences
+- Suitability for the intended analysis
+- Confidence in biological identification
 
-Use the waveform alongside the spectrogram to evaluate signal amplitude and timing.
+Record precise interval boundaries and selection rationale.
 
-When useful, zoom into promising intervals and listen to the recording at its original playback rate.
+Do not infer species identity or behavior from acoustic appearance alone without sufficient supporting evidence.
 
-**Select an interval** containing the desired vocalization, including enough context to preserve its beginning and ending.
+## 5. Extract Audio
 
-Record:
+Extract the selected interval directly from the original recording.
 
-- Start timestamp
-- End timestamp
-- Duration
-- Acoustic characteristics
-- Selection rationale
-- Species identification, if supported
-- Identification confidence and uncertainties
-
-Do not infer species identity from a spectrogram alone without adequate supporting evidence.
-
-### Example
-
-Suppose a promising vocalization occurs between 12:30 and 13:00.
-
-These timestamps are illustrative, not an identified recording.
-
-## 5. Terminal.app — Extract the selected interval
-
-Use FFmpeg to extract the selected interval directly from the original audio file.
-
-**Example for a 24-bit PCM source:**
+Example using FFmpeg:
 
 ```bash
 ffmpeg -ss 00:12:30 \
@@ -159,13 +111,61 @@ ffmpeg -ss 00:12:30 \
   -t 30 \
   -map 0:a:0 \
   -c:a pcm_s24le \
-  excerpts/whale_call_01.wav
+  excerpts/selected_call.wav
 ```
 
-Replace the timestamps, input filename, and output filename with the actual values.
+The timestamps, filenames, and 24-bit PCM encoding are illustrative.
 
-Select an output codec appropriate to the source:
+Choose output encoding appropriate to the original recording and intended analysis. Avoid unnecessary resampling, lossy conversion, or channel modification.
 
-| Original audio encoding | Suggested WAV output |
-|---|---|
-| 16-bit integer
+Document all processing parameters and intentional transformations.
+
+## 6. Verify the Excerpt
+
+Inspect the output:
+
+```bash
+ffprobe -v error \
+  -show_entries format=duration,format_name \
+  -show_entries stream=codec_name,sample_rate,channels,bits_per_sample,bits_per_raw_sample \
+  -of json excerpts/selected_call.wav
+```
+
+Verify:
+
+- Correct start and end boundaries
+- Expected duration
+- Intended acoustic content
+- Sample rate, channel configuration, and encoding
+- Absence of unintended truncation or processing artifacts
+
+Reopen the excerpt in an audio analysis application when visual or auditory verification is needed.
+
+## 7. Document Provenance and Reproducibility
+
+Maintain a record of:
+
+- NOAA collection and recording identifiers
+- Original source URL and permissions evidence
+- Recording date, location, and instrument metadata
+- Original filename and checksum
+- Retrieval procedure
+- Selected interval and rationale
+- Extraction command and software versions
+- Output properties and checksum
+- Unresolved metadata or identification uncertainty
+
+## Quality Control
+
+- Verify collection-specific access procedures.
+- Confirm recording-level reuse permissions.
+- Preserve original files and source metadata.
+- Distinguish documented technical specifications from independently assessed audio quality.
+- Avoid unsupported biological identification.
+- Minimize unnecessary audio transformations.
+- Independently verify extracted outputs.
+- Preserve reproducible commands and processing parameters.
+
+## Output
+
+A verified acoustic excerpt with traceable NOAA source metadata, documented retrieval and extraction procedures, and reproducible processing parameters.

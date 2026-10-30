@@ -20,15 +20,77 @@ require_command() {
   command -v "$1" >/dev/null 2>&1 || fail "Required command '$1' is not installed."
 }
 
-say 'NOAA whale-audio excerpt: guided command generator'
+say 'NOAA whale-audio workflow — Stage 1: retrieve and inspect'
 say 'This script does not verify licensing. Confirm source provenance and permissions in the NOAA metadata first.'
 
-source_ref="$(ask 'Original file path, gs:// URI, or direct HTTPS URL: ')"
+source_ref="$(ask 'Paste full source address (gs://, HTTPS, or local path): ')"
 [[ -n "$source_ref" ]] || fail 'A source is required.'
 
 workdir="$(ask "Working directory [$(pwd)]: ")"
 workdir="${workdir:-$(pwd)}"
 [[ "$workdir" = /* ]] || fail 'Please use an absolute working-directory path.'
+
+license_ref="$(ask 'NOAA metadata/license page URL (optional, for manifest): ')"
+
+case "$source_ref" in
+  gs://*) source_kind='gcs' ;;
+  https://*|http://*) source_kind='https' ;;
+  *) source_kind='local' ;;
+esac
+
+if [[ "$source_kind" == 'local' ]]; then
+  source_file="$source_ref"
+  [[ -f "$source_file" ]] || fail "Local source file not found: $source_file"
+else
+  remote_path="${source_ref%%\?*}"
+  source_name="${remote_path##*/}"
+  [[ -n "$source_name" && "$source_name" != '.' && "$source_name" != '..' ]] || fail 'Cannot determine the source filename from this URI.'
+  source_file="$workdir/raw/$source_name"
+fi
+
+say 'Stage 1: source retrieval'
+printf '  Source:   %s\n  Local original: %s\n' "$source_ref" "$source_file"
+if [[ "$source_kind" == 'gcs' ]]; then
+  show_command mkdir -p "$workdir/raw" "$workdir/excerpts"
+  show_command gcloud storage cp "$source_ref" "$source_file"
+elif [[ "$source_kind" == 'https' ]]; then
+  show_command mkdir -p "$workdir/raw" "$workdir/excerpts"
+  show_command curl -fL "$source_ref" -o "$source_file"
+else
+  say 'Original is already local; no download needed.'
+fi
+
+require_command ffprobe
+require_command shasum
+case "$source_kind" in
+  gcs) require_command gcloud ;;
+  https) require_command curl ;;
+esac
+
+if [[ "$source_kind" != 'local' ]]; then
+  if [[ -e "$source_file" ]]; then
+    reuse="$(ask "Source already downloaded. Reuse without overwriting? [Y/n]: ")"
+    case "$reuse" in n|N|no|NO) fail 'Stopped without replacing the original.' ;; esac
+  else
+    download="$(ask 'Download the original now? [Y/n]: ')"
+    case "$download" in n|N|no|NO) say 'No download performed.'; exit 0 ;; esac
+    mkdir -p "$workdir/raw"
+    if [[ "$source_kind" == 'gcs' ]]; then
+      gcloud storage cp "$source_ref" "$source_file" || fail 'Google Cloud download failed. Confirm the full gs:// URI; if signed out, check gcloud auth list. No excerpt created.'
+    else
+      curl -fL "$source_ref" -o "$source_file" || fail 'Download failed. No excerpt created.'
+    fi
+  fi
+fi
+
+say 'Source checksum and technical properties:'
+shasum -a 256 "$source_file"
+ffprobe -v error -show_entries 'format=duration:stream=codec_name,sample_rate,channels,bits_per_sample' -of 'default=noprint_wrappers=1' "$source_file"
+
+say 'Stage 2: select the acoustic interval'
+printf '\nOpen this ORIGINAL file in Audacity:\n  %s\n' "$source_file"
+say 'Listen and inspect its waveform or spectrogram. Find the beginning and end of the event you want to extract.'
+ask 'Return to Terminal and press Return once you have chosen the interval: ' >/dev/null
 
 start_seconds="$(ask 'Selection start time in seconds (e.g. 18.48): ')"
 end_seconds="$(ask 'Selection end time in seconds (e.g. 31.48): ')"
@@ -49,84 +111,21 @@ case "$bitdepth" in
   *) fail 'Choose 16, 24, or 32.' ;;
 esac
 
-license_ref="$(ask 'NOAA metadata/license page URL (optional, for manifest): ')"
-
-case "$source_ref" in
-  gs://*) source_kind='gcs' ;;
-  https://*|http://*) source_kind='https' ;;
-  *) source_kind='local' ;;
-esac
-
-if [[ "$source_kind" == 'local' ]]; then
-  source_file="$source_ref"
-  [[ -f "$source_file" ]] || fail "Local source file not found: $source_file"
-else
-  remote_path="${source_ref%%\?*}"
-  source_name="${remote_path##*/}"
-  [[ -n "$source_name" && "$source_name" != '.' && "$source_name" != '..' ]] || fail 'Cannot determine the source filename from this URI.'
-  source_file="$workdir/raw/$source_name"
-fi
-
 output_file="$workdir/excerpts/$output_name"
 manifest_file="$workdir/excerpts/${output_name%.wav}_manifest.txt"
-[[ "$output_file" != "$source_file" ]] || fail 'Output cannot overwrite the source file.'
-
-say 'Review the generated workflow:'
-printf '  Source:   %s\n' "$source_ref"
-printf '  Interval: %s to %s seconds (duration %s seconds)\n' "$start_seconds" "$end_seconds" "$duration_seconds"
-printf '  Codec:    %s (source sample rate retained by default)\n' "$codec"
-printf '  Output:   %s\n' "$output_file"
-
-say 'Commands to run:'
-if [[ "$source_kind" == 'gcs' ]]; then
-  show_command mkdir -p "$workdir/raw" "$workdir/excerpts"
-  show_command gcloud storage cp "$source_ref" "$source_file"
-elif [[ "$source_kind" == 'https' ]]; then
-  show_command mkdir -p "$workdir/raw" "$workdir/excerpts"
-  show_command curl -fL "$source_ref" -o "$source_file"
-else
-  show_command mkdir -p "$workdir/excerpts"
-fi
-show_command shasum -a 256 "$source_file"
-show_command ffprobe -v error -show_entries 'format=duration:stream=codec_name,sample_rate,channels,bits_per_sample' -of 'default=noprint_wrappers=1' "$source_file"
-show_command ffmpeg -i "$source_file" -ss "$start_seconds" -t "$duration_seconds" -acodec "$codec" "$output_file"
-show_command ffprobe -v error -show_entries 'format=duration:stream=codec_name,sample_rate,channels,bits_per_sample' -of 'default=noprint_wrappers=1' "$output_file"
-show_command shasum -a 256 "$output_file"
-
-say 'You may copy these generated commands. Nothing has been downloaded or altered.'
-confirm="$(ask 'Execute this workflow now? [y/N]: ')"
-case "$confirm" in y|Y|yes|YES) ;; *) say 'Preview only; no files changed.'; exit 0 ;; esac
-
-require_command ffmpeg
-require_command ffprobe
-require_command shasum
-case "$source_kind" in
-  gcs) require_command gcloud ;;
-  https) require_command curl ;;
-esac
-
+[[ "$output_file" != "$source_file" ]] || fail 'Output cannot overwrite the original.'
 [[ ! -e "$output_file" ]] || fail "Output already exists: $output_file (choose a new output name)."
 [[ ! -e "$manifest_file" ]] || fail "Manifest already exists: $manifest_file (choose a new output name)."
 
+require_command ffmpeg
+say 'Review extraction command:'
+show_command ffmpeg -n -i "$source_file" -ss "$start_seconds" -t "$duration_seconds" -acodec "$codec" "$output_file"
+confirm="$(ask 'Extract and verify this excerpt now? [Y/n]: ')"
+case "$confirm" in n|N|no|NO) say 'Original preserved; no excerpt extracted.'; exit 0 ;; esac
+
 mkdir -p "$workdir/excerpts"
-if [[ "$source_kind" != 'local' ]]; then
-  mkdir -p "$workdir/raw"
-  if [[ -e "$source_file" ]]; then
-    reuse="$(ask "Downloaded source already exists. Reuse it without overwriting? [y/N]: ")"
-    case "$reuse" in y|Y|yes|YES) ;; *) fail 'Stopped without replacing the source.' ;; esac
-  elif [[ "$source_kind" == 'gcs' ]]; then
-    gcloud storage cp "$source_ref" "$source_file"
-  else
-    curl -fL "$source_ref" -o "$source_file"
-  fi
-fi
-
-say 'Source checksum and technical properties:'
-shasum -a 256 "$source_file"
-ffprobe -v error -show_entries 'format=duration:stream=codec_name,sample_rate,channels,bits_per_sample' -of 'default=noprint_wrappers=1' "$source_file"
-
 say 'Extracting selected interval:'
-ffmpeg -i "$source_file" -ss "$start_seconds" -t "$duration_seconds" -acodec "$codec" "$output_file"
+ffmpeg -n -i "$source_file" -ss "$start_seconds" -t "$duration_seconds" -acodec "$codec" "$output_file"
 
 say 'Output verification:'
 ffprobe -v error -show_entries 'format=duration:stream=codec_name,sample_rate,channels,bits_per_sample' -of 'default=noprint_wrappers=1' "$output_file"
@@ -140,7 +139,8 @@ shasum -a 256 "$output_file"
   printf '\nSource SHA-256:\n'; shasum -a 256 "$source_file"
   printf '\nOutput SHA-256:\n'; shasum -a 256 "$output_file"
   printf '\nFFmpeg version:\n'; ffmpeg -version | sed -n '1p'
-  printf '\nNOTE: Confirm event boundaries by listening and spectrogram inspection in Audacity.\n'
+  printf '\nSelection rationale: [Describe acoustic event and boundary choices]\n'
+  printf 'Audacity verification: [Check listening, spectrogram, duration, and artifacts]\n'
 } > "$manifest_file"
 
 say "Completed. Manifest saved to: $manifest_file"
